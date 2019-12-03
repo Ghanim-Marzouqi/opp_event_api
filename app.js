@@ -5,11 +5,10 @@ const dotenv = require("dotenv");
 const serveIndex = require("serve-index");
 const mysql = require("mysql");
 const ActiveDirectory = require("activedirectory");
-const mailSender = require("./services/mailSender");
 
 // import routers
-const auth = require("./routes/auth");
-const event = require("./routes/event");
+const Auth = require("./routes/Auth");
+const Event = require("./routes/Event");
 
 // add .env configuration
 dotenv.config();
@@ -20,10 +19,10 @@ const port = process.env.PORT;
 
 // Active Directory configuration
 const adConfig = {
-  url: "ldap://almizan.opphq.gov:389",
-  baseDN: "DC=opphq,DC=gov",
-  username: "opphq\\ESRVLink",
-  password: "11223344"
+  url: process.env.AD_HOST,
+  baseDN: process.env.AD_BASE,
+  username: process.env.AD_USER,
+  password: process.env.AD_PASS
 };
 
 // Active Directory instance
@@ -34,7 +33,7 @@ app.set("AD", ad);
 
 // MySQL connection
 const mysqlConfig = {
-  connectionLimit: 10,
+  connectionLimit: 1000,
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
@@ -66,11 +65,11 @@ app.get("/", (req, res) => {
 });
 
 // routers
-app.use("/auth", auth);
-app.use("/events", event);
+app.use("/auth", Auth);
+app.use("/events", Event);
 
 /**
- * USE: Fetch Event Categories
+ * USE: Get Event Categories
  * METHOD: GET
  * FULL URL: http://localhost:3000/categories
  */
@@ -81,7 +80,7 @@ app.get("/categories", (req, res) => {
     },
     (err, results, fields) => {
       if (err) {
-        res.json({
+        res.status(500).json({
           status: "error",
           message: "حدث خطأ اثناء جلب انواع المهام",
           results: err.message
@@ -105,11 +104,6 @@ app.get("/categories", (req, res) => {
       }
     }
   );
-});
-
-app.get("/sendmail", (req, res) => {
-  mailSender();
-  res.send("Done");
 });
 
 // run app

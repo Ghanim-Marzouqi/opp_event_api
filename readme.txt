@@ -22,11 +22,23 @@ This file contains Installation and Configuration of OPP Event API
     APP_NAME=opp_event_server
     APP_VERSION=1.0.0
 
+    # active directory settings
+    AD_HOST=ldap://<active-directory-domain>:<active-directory-port>
+    AD_BASE=DC=<domain-name>,DC=<domain-type>
+    AD_USER=<active-directory-user>
+    AD_PASS=<active-directory-pass>
+
     # database settings
-    DB_HOST=localhost
-    DB_USER=root
-    DB_PASS=
-    DB_NAME=OPP_EVENT
+    DB_HOST=<database-server-ip>
+    DB_USER=<database-user>
+    DB_PASS=<database-pass>
+    DB_NAME=<database-name>
+
+    # email settings
+    MAIL_HOST=<mail-server-ip>
+    MAIL_PORT=<mail-server-port>
+    MAIL_USER=<email-user>
+    MAIL_PASS=<email-pass>
 
 6) Open CMD or PowerShell and type the following:
     > cd C:\applications\<project_name>

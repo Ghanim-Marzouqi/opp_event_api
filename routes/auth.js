@@ -22,7 +22,7 @@ router.post("/", (req, res) => {
       // Active Directory method is used
       ad.authenticate(`${username}@opphq.gov`, password, (err, auth) => {
         if (err) {
-          res.json({
+          res.status(500).json({
             status: "error",
             message: "حدث خطأ في Active Directory",
             results: `AD ERROR: ${JSON.stringify(err)}`
@@ -33,7 +33,7 @@ router.post("/", (req, res) => {
           // fetch all user data
           ad.findUser(username, (err, user) => {
             if (err) {
-              res.json({
+              res.status(500).json({
                 status: "error",
                 message: "حدث خطأ في Active Directory",
                 results: `AD ERROR: ${JSON.stringify(err)}`
@@ -41,7 +41,7 @@ router.post("/", (req, res) => {
             }
 
             if (!user) {
-              res.json({
+              res.status(404).json({
                 status: "error",
                 message: `اسم المستخدم ${username} غير موجود`,
                 results: `AD ERROR: ${JSON.stringify(err)}`
@@ -61,13 +61,12 @@ router.post("/", (req, res) => {
       // fetch user from database
       connection.query(
         {
-          sql:
-            "SELECT * FROM `EMPLOYEES` WHERE EMP_USERNAME = ? AND EMP_PASSWORD = ?",
-          values: [username.toUpperCase(), password]
+          sql: "SELECT * FROM `EMPLOYEES` WHERE EMP_USERNAME = ?",
+          values: [username.toUpperCase()]
         },
         (err, results, fields) => {
           if (err) {
-            res.json({
+            res.status(500).json({
               status: "error",
               message: "حدث خطأ اثناء تسجيل الدخول",
               results: err.message
@@ -85,7 +84,6 @@ router.post("/", (req, res) => {
                 JSON.parse(
                   JSON.stringify({
                     username: e.EMP_USERNAME,
-                    password: e.EMP_PASSWORD,
                     name: e.EMP_NAME,
                     email: e.EMP_EMAIL,
                     department: e.EMP_DEPR
