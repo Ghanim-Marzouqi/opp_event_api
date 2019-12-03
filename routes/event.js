@@ -16,6 +16,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /**
+ * USE: Fetch Events based on Logged User
  * METHOD: GET
  * QUERY STRING: username
  * FULL URL: http://localhost:3000/events?username=GhanimAdmin
@@ -76,6 +77,7 @@ router.get("/", (req, res) => {
 });
 
 /**
+ * USE: Create an Event without a File based on Logged User
  * METHOD: POST
  * QUERY STRING: username
  * POST DATA: title - desc - startDate - endDate - catId
@@ -124,6 +126,7 @@ router.post("/", (req, res) => {
 });
 
 /**
+ * USE: Create an Event with a File based on Logged User
  * METHOD: POST
  * QUERY STRING: username
  * POST DATA: title - desc - startDate - endDate - catId
@@ -193,6 +196,7 @@ router.post("/file", upload.single("file"), (req, res) => {
 });
 
 /**
+ * USE: Create an Sub Event based on Logged User and Selected Event
  * METHOD: POST
  * QUERY STRING: username
  * URL PARAMETER: id

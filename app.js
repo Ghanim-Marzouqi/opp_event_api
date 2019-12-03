@@ -4,7 +4,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const serveIndex = require("serve-index");
 const mysql = require("mysql");
-const ActiveDirectory = require('activedirectory');
+const ActiveDirectory = require("activedirectory");
 
 // import routers
 const auth = require("./routes/auth");
@@ -19,17 +19,17 @@ const port = process.env.PORT;
 
 // Active Directory configuration
 const adConfig = {
-  url: 'ldap://almizan.opphq.gov:389',
-  baseDN: 'DC=opphq,DC=gov',
-  username: 'opphq\\ESRVLink',
-  password: '11223344'
-}
+  url: "ldap://almizan.opphq.gov:389",
+  baseDN: "DC=opphq,DC=gov",
+  username: "opphq\\ESRVLink",
+  password: "11223344"
+};
 
 // Active Directory instance
 const ad = new ActiveDirectory(adConfig);
 
 // set a global variable for Active Directory instance
-app.set('AD', ad);
+app.set("AD", ad);
 
 // MySQL connection
 const mysqlConfig = {
@@ -68,25 +68,42 @@ app.get("/", (req, res) => {
 app.use("/auth", auth);
 app.use("/events", event);
 
-// fetch categories
+/**
+ * USE: Fetch Event Categories
+ * METHOD: GET
+ * FULL URL: http://localhost:3000/categories
+ */
 app.get("/categories", (req, res) => {
-  mysqlConnection.query({
-    sql: 'SELECT * FROM `EVENT_CAT`'
-  }, (err, results, fields) => {
-    if (err) {
-      res.json({
-        status: "error",
-        message: "حدث خطأ اثناء جلب انواع المهام",
-        results: err.message
-      });
-    } else {
-      res.json({
-        status: "success",
-        message: "تم جلب انواع المهام بنجاح",
-        results
-      });
+  mysqlConnection.query(
+    {
+      sql: "SELECT * FROM `EVENT_CAT`"
+    },
+    (err, results, fields) => {
+      if (err) {
+        res.json({
+          status: "error",
+          message: "حدث خطأ اثناء جلب انواع المهام",
+          results: err.message
+        });
+      } else {
+        // create a new array of categories
+        const categories = results.map(e =>
+          JSON.parse(
+            JSON.stringify({
+              id: e.CAT_ID,
+              name: e.CAT_NAME
+            })
+          )
+        );
+
+        res.json({
+          status: "success",
+          message: "تم جلب انواع المهام بنجاح",
+          results: categories
+        });
+      }
     }
-  });
+  );
 });
 
 // run app
