@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const serveIndex = require("serve-index");
 const mysql = require("mysql");
 const ActiveDirectory = require("activedirectory");
+const mailSender = require("./services/mailSender");
 
 // import routers
 const auth = require("./routes/auth");
@@ -104,6 +105,11 @@ app.get("/categories", (req, res) => {
       }
     }
   );
+});
+
+app.get("/sendmail", (req, res) => {
+  mailSender();
+  res.send("Done");
 });
 
 // run app
