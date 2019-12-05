@@ -38,7 +38,7 @@ router.get("/", (req, res) => {
       },
       (err, results, fields) => {
         if (err) {
-          res.status(500).json({
+          res.json({
             status: "error",
             message: "حدث خطأ اثناء جلب المهام",
             results: err.message
@@ -52,8 +52,8 @@ router.get("/", (req, res) => {
                 title: e.MST_TITLE,
                 desc: e.MST_DESC,
                 file: e.MST_FILE,
-                startDate: e.MST_START,
-                endDate: e.MST_END,
+                start: e.MST_START,
+                end: e.MST_END,
                 allDay: e.MST_ALLDAY,
                 status: e.MST_STATUS,
                 username: e.EMP_USERNAME,
@@ -105,7 +105,7 @@ router.get("/:eventId", (req, res) => {
       },
       (err, results, fields) => {
         if (err) {
-          res.status(500).json({
+          res.json({
             status: "error",
             message: "حدث خطأ اثناء جلب المهام",
             results: err.message
@@ -119,8 +119,8 @@ router.get("/:eventId", (req, res) => {
                 title: e.MST_TITLE,
                 desc: e.MST_DESC,
                 file: e.MST_FILE,
-                startDate: e.MST_START,
-                endDate: e.MST_END,
+                start: e.MST_START,
+                end: e.MST_END,
                 allDay: e.MST_ALLDAY,
                 status: e.MST_STATUS,
                 categoryId: e.CAT_ID,
@@ -184,7 +184,8 @@ router.post("/", (req, res) => {
       },
       (err, results, fields) => {
         if (err) {
-          res.status(500).json({
+          console.log(err.message);
+          res.json({
             status: "error",
             message: "حدث خطأ أثناء إضافة المهمة",
             results: err.message
@@ -196,8 +197,8 @@ router.post("/", (req, res) => {
             results: {
               title,
               desc,
-              startDate,
-              endDate,
+              start: startDate,
+              end: endDate,
               allDay,
               categoryId,
               username: username.toUpperCase()
@@ -257,7 +258,8 @@ router.post("/file", upload.single("file"), (req, res) => {
       },
       (err, results, fields) => {
         if (err) {
-          res.status(500).json({
+          console.log(err.message);
+          res.json({
             status: "error",
             message: "حدث خطأ أثناء إضافة المهمة",
             results: err.message
@@ -270,8 +272,8 @@ router.post("/file", upload.single("file"), (req, res) => {
               title,
               desc,
               file,
-              startDate,
-              endDate,
+              start: startDate,
+              end: endDate,
               allDay,
               categoryId,
               username: username.toUpperCase()
@@ -315,7 +317,8 @@ router.delete("/:eventId", (req, res) => {
       },
       (err, results, fields) => {
         if (err) {
-          res.status(500).json({
+          console.log(err.message);
+          res.json({
             status: "error",
             message: "حدث خطأ اثناء حذف المهمة",
             results: err.message
@@ -380,7 +383,7 @@ router.patch("/:eventId", (req, res) => {
       },
       (err, results, fields) => {
         if (err) {
-          res.status(500).json({
+          res.json({
             status: "error",
             message: "حدث خطأ اثناء تعديل المهمة",
             results: err.message
@@ -394,8 +397,8 @@ router.patch("/:eventId", (req, res) => {
                 eventId,
                 title,
                 desc,
-                startDate,
-                endDate,
+                start: startDate,
+                end: endDate,
                 allDay,
                 username: username.toUpperCase()
               }
@@ -408,8 +411,8 @@ router.patch("/:eventId", (req, res) => {
                 eventId,
                 title,
                 desc,
-                startDate,
-                endDate,
+                start: startDate,
+                end: endDate,
                 allDay,
                 username: username.toUpperCase()
               }
@@ -473,7 +476,7 @@ router.patch("/file/:eventId", upload.single("file"), (req, res) => {
       },
       (err, results, fields) => {
         if (err) {
-          res.status(500).json({
+          res.json({
             status: "error",
             message: "حدث خطأ اثناء تعديل المهمة",
             results: err.message
@@ -488,8 +491,8 @@ router.patch("/file/:eventId", upload.single("file"), (req, res) => {
                 title,
                 desc,
                 file,
-                startDate,
-                endDate,
+                start: startDate,
+                end: endDate,
                 allDay,
                 username: username.toUpperCase()
               }
@@ -503,8 +506,8 @@ router.patch("/file/:eventId", upload.single("file"), (req, res) => {
                 title,
                 desc,
                 file,
-                startDate,
-                endDate,
+                start: startDate,
+                end: endDate,
                 allDay,
                 username: username.toUpperCase()
               }
