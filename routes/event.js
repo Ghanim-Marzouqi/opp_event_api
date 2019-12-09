@@ -1,6 +1,7 @@
 // import depandancies
 const router = require("express").Router();
 const multer = require("multer");
+const request = require("request");
 
 // create a storage
 const storage = multer.diskStorage({
@@ -191,6 +192,25 @@ router.post("/", (req, res) => {
             results: err.message
           });
         } else {
+          // send an email
+          request.post(
+            "http://10.147.3.11/OppEventEmailAPI/api/email/event",
+            {
+              From: "",
+              To: `${username}@opp.gov.om`,
+              Subject: "مهمة جديدة",
+              Body: `تم إنشاء مهمة جديدة بتاريخ ${startDate}`
+            },
+            (error, response, body) => {
+              if (error) {
+                console.log(error);
+              } else {
+                console.log(response);
+              }
+            }
+          );
+
+          // send response
           res.status(201).json({
             status: "success",
             message: "تم إضافة المهمة بنجاح",
