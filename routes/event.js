@@ -34,7 +34,7 @@ router.get("/", (req, res) => {
     connection.query(
       {
         sql:
-          "SELECT * FROM `EVENT_MST` WHERE EMP_USERNAME = ? AND `MST_STATUS` = 1",
+          "SELECT MST_ID, MST_TITLE, MST_DESC, MST_FILE, DATE_FORMAT(MST_START,'%Y-%m-%d %H:%i') AS MST_START, DATE_FORMAT(MST_END,'%Y-%m-%d %H:%i') AS MST_END, MST_ALLDAY, MST_STATUS, EMP_USERNAME, CAT_ID FROM `EVENT_MST` WHERE EMP_USERNAME = ? AND `MST_STATUS` = 1",
         values: [username.toUpperCase()]
       },
       (err, results, fields) => {
@@ -101,7 +101,7 @@ router.get("/:eventId", (req, res) => {
     connection.query(
       {
         sql:
-          "SELECT * FROM `EVENT_MST` WHERE `EMP_USERNAME` = ? AND `MST_ID` = ? AND `MST_STATUS` = 1",
+          "SELECT MST_ID, MST_TITLE, MST_DESC, MST_FILE, DATE_FORMAT(MST_START,'%Y-%m-%d %H:%i') AS MST_START, DATE_FORMAT(MST_END,'%Y-%m-%d %H:%i') AS MST_END, MST_ALLDAY, MST_STATUS, EMP_USERNAME, CAT_ID FROM `EVENT_MST` WHERE `EMP_USERNAME` = ? AND `MST_ID` = ? AND `MST_STATUS` = 1",
         values: [username.toUpperCase(), eventId]
       },
       (err, results, fields) => {
