@@ -68,44 +68,6 @@ app.get("/", (req, res) => {
 app.use("/auth", Auth);
 app.use("/events", Event);
 
-/**
- * USE: Get Event Categories
- * METHOD: GET
- * FULL URL: http://localhost:3000/categories
- */
-app.get("/categories", (req, res) => {
-  mysqlConnection.query(
-    {
-      sql: "SELECT * FROM `EVENT_CAT`"
-    },
-    (err, results, fields) => {
-      if (err) {
-        res.status(500).json({
-          status: "error",
-          message: "حدث خطأ اثناء جلب انواع المهام",
-          results: err.message
-        });
-      } else {
-        // create a new array of categories
-        const categories = results.map(e =>
-          JSON.parse(
-            JSON.stringify({
-              id: e.CAT_ID,
-              name: e.CAT_NAME
-            })
-          )
-        );
-
-        res.json({
-          status: "success",
-          message: "تم جلب انواع المهام بنجاح",
-          results: categories
-        });
-      }
-    }
-  );
-});
-
 // run app
 app.listen(port, () =>
   console.log(`OPP Event API is running on port: ${port}`)

@@ -19,22 +19,30 @@ const upload = multer({ storage });
 /**
  * USE: Fetch Events based on Logged User
  * METHOD: GET
- * QUERY STRING: username
+ * QUERY STRING: username - category
  * FULL URL: http://localhost:3000/events?username=GhanimAdmin
  */
 router.get("/", (req, res) => {
-  // get username from query string
+  // get username and category from query string
   const username = req.query.username;
+  const category = req.query.category;
+  let sqlQuery =
+    "SELECT MST_ID, MST_TITLE, MST_DESC, MST_FILE, DATE_FORMAT(MST_START,'%Y-%m-%d %H:%i') AS MST_START, DATE_FORMAT(MST_END,'%Y-%m-%d %H:%i') AS MST_END, MST_ALLDAY, MST_STATUS, EMP_USERNAME FROM `EVENT_MST` WHERE EMP_USERNAME = ? ";
 
   // get MySQL connection
   const connection = req.app.get("dbConnection");
 
   if (username) {
+    if (category === "active") {
+      sqlQuery += "AND `MST_STATUS` = 1";
+    } else if (category === "deleted") {
+      sqlQuery += "AND `MST_STATUS` = 0";
+    }
+
     // fetch events from database
     connection.query(
       {
-        sql:
-          "SELECT MST_ID, MST_TITLE, MST_DESC, MST_FILE, DATE_FORMAT(MST_START,'%Y-%m-%d %H:%i') AS MST_START, DATE_FORMAT(MST_END,'%Y-%m-%d %H:%i') AS MST_END, MST_ALLDAY, MST_STATUS, EMP_USERNAME, CAT_ID FROM `EVENT_MST` WHERE EMP_USERNAME = ? AND `MST_STATUS` = 1",
+        sql: sqlQuery,
         values: [username.toUpperCase()]
       },
       (err, results, fields) => {
@@ -57,8 +65,7 @@ router.get("/", (req, res) => {
                 end: e.MST_END,
                 allDay: e.MST_ALLDAY,
                 status: e.MST_STATUS,
-                username: e.EMP_USERNAME,
-                categoryId: e.CAT_ID
+                username: e.EMP_USERNAME
               })
             )
           );
@@ -101,7 +108,7 @@ router.get("/:eventId", (req, res) => {
     connection.query(
       {
         sql:
-          "SELECT MST_ID, MST_TITLE, MST_DESC, MST_FILE, DATE_FORMAT(MST_START,'%Y-%m-%d %H:%i') AS MST_START, DATE_FORMAT(MST_END,'%Y-%m-%d %H:%i') AS MST_END, MST_ALLDAY, MST_STATUS, EMP_USERNAME, CAT_ID FROM `EVENT_MST` WHERE `EMP_USERNAME` = ? AND `MST_ID` = ? AND `MST_STATUS` = 1",
+          "SELECT MST_ID, MST_TITLE, MST_DESC, MST_FILE, DATE_FORMAT(MST_START,'%Y-%m-%d %H:%i') AS MST_START, DATE_FORMAT(MST_END,'%Y-%m-%d %H:%i') AS MST_END, MST_ALLDAY, MST_STATUS, EMP_USERNAME FROM `EVENT_MST` WHERE `EMP_USERNAME` = ? AND `MST_ID` = ? AND `MST_STATUS` = 1",
         values: [username.toUpperCase(), eventId]
       },
       (err, results, fields) => {
@@ -124,7 +131,6 @@ router.get("/:eventId", (req, res) => {
                 end: e.MST_END,
                 allDay: e.MST_ALLDAY,
                 status: e.MST_STATUS,
-                categoryId: e.CAT_ID,
                 username: e.EMP_USERNAME
               })
             )
@@ -150,7 +156,7 @@ router.get("/:eventId", (req, res) => {
  * USE: Create an Event without a File based on Logged User
  * METHOD: POST
  * QUERY STRING: username - allDay (yes / no)
- * POST DATA: title - desc - startDate - endDate - categoryId
+ * POST DATA: title - desc - startDate - endDate
  * FULL URL: http://localhost:3000/events?username=GhanimAdmin&allDay=yes
  */
 router.post("/", (req, res) => {
@@ -158,7 +164,7 @@ router.post("/", (req, res) => {
   const { username, allDay } = req.query;
 
   // extract post data
-  const { title, desc, startDate, endDate, categoryId } = req.body;
+  const { title, desc, startDate, endDate } = req.body;
 
   // get MySQL connection
   const connection = req.app.get("dbConnection");
@@ -172,15 +178,14 @@ router.post("/", (req, res) => {
     connection.query(
       {
         sql:
-          "INSERT INTO `EVENT_MST` (`MST_TITLE`, `MST_DESC`, `MST_START`, `MST_END`, `MST_ALLDAY`, `EMP_USERNAME`, `CAT_ID`) VALUES (?,?,?,?,?,?,?)",
+          "INSERT INTO `EVENT_MST` (`MST_TITLE`, `MST_DESC`, `MST_START`, `MST_END`, `MST_ALLDAY`, `EMP_USERNAME`) VALUES (?,?,?,?,?,?)",
         values: [
           title,
           desc,
           startDate,
           endDate,
           allDayStatus,
-          username.toUpperCase(),
-          categoryId
+          username.toUpperCase()
         ]
       },
       (err, results, fields) => {
@@ -220,7 +225,6 @@ router.post("/", (req, res) => {
               start: startDate,
               end: endDate,
               allDay,
-              categoryId,
               username: username.toUpperCase()
             }
           });
@@ -239,7 +243,7 @@ router.post("/", (req, res) => {
  * USE: Create an Event with a File based on Logged User
  * METHOD: POST
  * QUERY STRING: username - allDay (yes / no)
- * POST DATA: title - desc - startDate - endDate - categoryId - file
+ * POST DATA: title - desc - startDate - endDate - file
  * FULL URL: http://localhost:3000/events/file?username=GhanimAdmin&allDay=yes
  */
 router.post("/file", upload.single("file"), (req, res) => {
@@ -247,7 +251,7 @@ router.post("/file", upload.single("file"), (req, res) => {
   const { username, allDay } = req.query;
 
   // extract post data
-  const { title, desc, startDate, endDate, categoryId } = req.body;
+  const { title, desc, startDate, endDate } = req.body;
 
   // construct a file url
   const file = `${req.protocol}://${req.get("host")}/ftp/${req.file.filename}`;
@@ -264,7 +268,7 @@ router.post("/file", upload.single("file"), (req, res) => {
     connection.query(
       {
         sql:
-          "INSERT INTO `EVENT_MST` (`MST_TITLE`, `MST_DESC`, `MST_FILE`, `MST_START`, `MST_END`, `MST_ALLDAY`, `EMP_USERNAME`, `CAT_ID`) VALUES (?,?,?,?,?,?,?,?)",
+          "INSERT INTO `EVENT_MST` (`MST_TITLE`, `MST_DESC`, `MST_FILE`, `MST_START`, `MST_END`, `MST_ALLDAY`, `EMP_USERNAME`) VALUES (?,?,?,?,?,?,?)",
         values: [
           title,
           desc,
@@ -272,8 +276,7 @@ router.post("/file", upload.single("file"), (req, res) => {
           startDate,
           endDate,
           allDayStatus,
-          username.toUpperCase(),
-          categoryId
+          username.toUpperCase()
         ]
       },
       (err, results, fields) => {
@@ -295,7 +298,6 @@ router.post("/file", upload.single("file"), (req, res) => {
               start: startDate,
               end: endDate,
               allDay,
-              categoryId,
               username: username.toUpperCase()
             }
           });
