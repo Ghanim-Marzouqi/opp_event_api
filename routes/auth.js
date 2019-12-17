@@ -17,6 +17,7 @@ router.post("/", (req, res) => {
   const ad = req.app.get("AD");
   const connection = req.app.get("dbConnection");
 
+  // check authentication type
   if (authType) {
     if (authType === "ad") {
       // Active Directory method is used
@@ -33,7 +34,7 @@ router.post("/", (req, res) => {
           // fetch all user data
           ad.findUser(username, (err, user) => {
             if (err) {
-              res.status(500).json({
+              res.json({
                 status: "error",
                 message: "حدث خطأ في Active Directory",
                 results: `AD ERROR: ${JSON.stringify(err)}`
@@ -41,7 +42,7 @@ router.post("/", (req, res) => {
             }
 
             if (!user) {
-              res.status(404).json({
+              res.json({
                 status: "error",
                 message: `اسم المستخدم ${username} غير موجود`,
                 results: `AD ERROR: ${JSON.stringify(err)}`
@@ -61,12 +62,13 @@ router.post("/", (req, res) => {
       // fetch user from database
       connection.query(
         {
-          sql: "SELECT * FROM `EMPLOYEES` WHERE EMP_USERNAME = ?",
-          values: [username.toUpperCase()]
+          sql:
+            "SELECT * FROM `EMPLOYEES` WHERE `EMP_USERNAME` = ? AND `EMP_PASSWORD` = ?",
+          values: [username.toUpperCase(), password]
         },
         (err, results, fields) => {
           if (err) {
-            res.status(500).json({
+            res.json({
               status: "error",
               message: "حدث خطأ اثناء تسجيل الدخول",
               results: err.message
@@ -114,6 +116,66 @@ router.post("/", (req, res) => {
       message: "لا يمكن التعرف على نوع طريقة تسجيل الدخول"
     });
   }
+});
+
+/**
+ * USE: Create New User
+ * METHOD: POST
+ * POST DATA: username - password - name - email - department
+ * FULL URL: http://localhost:3000/auth/create
+ */
+router.post("/create", (req, res) => {
+  // get all post data
+  const { username, password, name, email, department } = req.body;
+
+  // get MySQL Connection
+  const connection = req.app.get("dbConnection");
+
+  // create new user inside database
+  connection.query(
+    {
+      sql:
+        "INSERT INTO `EMPLOYEES` (`EMP_USERNAME`, `EMP_PASSWORD`, `EMP_NAME`, `EMP_EMAIL`, `EMP_DEPR`) VALUES (?,?,?,?,?)",
+      values: [username.toUpperCase(), password, name, email, department]
+    },
+    (err, results, fields) => {
+      if (err) {
+        res.json({
+          status: "error",
+          message: "حدث خطأ أثناء تسجيل مستخدم جديد",
+          results: err.message
+        });
+      } else {
+        // get current datetime
+        const today = new Date();
+        const date =
+          today.getFullYear() +
+          "-" +
+          (today.getMonth() + 1) +
+          "-" +
+          today.getDate();
+        const time =
+          today.getHours() +
+          ":" +
+          today.getMinutes() +
+          ":" +
+          today.getSeconds();
+        const dateTime = date + " " + time;
+
+        res.status(201).json({
+          status: "success",
+          message: "تم إضافة مستخدم جديد",
+          results: {
+            username,
+            name,
+            email,
+            department,
+            created_at: dateTime
+          }
+        });
+      }
+    }
+  );
 });
 
 // export router
