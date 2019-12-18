@@ -215,22 +215,22 @@ router.post("/", (req, res) => {
           });
         } else {
           // send an email
-          request.post(
-            "http://10.147.3.11/OppEventEmailAPI/api/email/event",
-            {
-              From: "",
-              To: `${username}@opp.gov.om`,
-              Subject: "مهمة جديدة",
-              Body: `تم إنشاء مهمة جديدة بتاريخ ${startDate}`
-            },
-            (error, response, body) => {
-              if (error) {
-                console.log(error);
-              } else {
-                console.log(response);
-              }
-            }
-          );
+          // request.post(
+          //   "http://10.147.3.11/OppEventEmailAPI/api/email/event",
+          //   {
+          //     From: "",
+          //     To: `${username}@opp.gov.om`,
+          //     Subject: "مهمة جديدة",
+          //     Body: `تم إنشاء مهمة جديدة بتاريخ ${startDate}`
+          //   },
+          //   (error, response, body) => {
+          //     if (error) {
+          //       console.log(error);
+          //     } else {
+          //       console.log(response);
+          //     }
+          //   }
+          // );
 
           // send response
           res.status(201).json({
@@ -401,7 +401,7 @@ router.delete("/:eventId", (req, res) => {
  * METHOD: PATCH
  * QUERY STRING: username - allDay (yes / no)
  * URL PARAMETER: eventId
- * POST DATA: title - desc - startDate - endDate
+ * POST DATA: title - desc - startDate - endDate - canView - canDelete - canUpdate
  * FULL URL: http://localhost:3000/events/1?username=GhanimAdmin&allDay=yes
  */
 router.patch("/:eventId", (req, res) => {
@@ -412,7 +412,15 @@ router.patch("/:eventId", (req, res) => {
   const eventId = req.params.eventId;
 
   // get post data
-  const { title, desc, startDate, endDate } = req.body;
+  const {
+    title,
+    desc,
+    startDate,
+    endDate,
+    canView,
+    canDelete,
+    canUpdate
+  } = req.body;
 
   // get MySQL connection
   const connection = req.app.get("dbConnection");
@@ -426,13 +434,16 @@ router.patch("/:eventId", (req, res) => {
     connection.query(
       {
         sql:
-          "UPDATE `EVENT_MST` SET `MST_TITLE` = ?, `MST_DESC` = ?, `MST_START` = ?, `MST_END` = ?, `MST_ALLDAY` = ? WHERE `EMP_USERNAME` = ? AND `MST_ID` = ? AND `MST_STATUS` = 1",
+          "UPDATE `EVENT_MST` SET `MST_TITLE` = ?, `MST_DESC` = ?, `MST_START` = ?, `MST_END` = ?, `MST_ALLDAY` = ?, `MST_READ` = ?, `MST_DELETE` = ?, `MST_UPDATE` = ? WHERE `EMP_USERNAME` = ? AND `MST_ID` = ? AND `MST_STATUS` = 1",
         values: [
           title,
           desc,
           startDate,
           endDate,
           allDayStatus,
+          canView,
+          canDelete,
+          canUpdate,
           username.toUpperCase(),
           eventId
         ]
@@ -456,6 +467,9 @@ router.patch("/:eventId", (req, res) => {
                 start: startDate,
                 end: endDate,
                 allDay,
+                canView,
+                canDelete,
+                canUpdate,
                 username: username.toUpperCase()
               }
             });
@@ -470,6 +484,9 @@ router.patch("/:eventId", (req, res) => {
                 start: startDate,
                 end: endDate,
                 allDay,
+                canView,
+                canDelete,
+                canUpdate,
                 username: username.toUpperCase()
               }
             });
@@ -490,7 +507,7 @@ router.patch("/:eventId", (req, res) => {
  * METHOD: PATCH
  * QUERY STRING: username - allDay (yes / no)
  * URL PARAMETER: eventId
- * POST DATA: title - desc - startDate - endDate - file
+ * POST DATA: title - desc - startDate - endDate - file -  canView - canDelete - canUpdate
  * FULL URL: http://localhost:3000/events/file/1?username=GhanimAdmin&allDay=yes
  */
 router.patch("/file/:eventId", upload.single("file"), (req, res) => {
@@ -501,7 +518,15 @@ router.patch("/file/:eventId", upload.single("file"), (req, res) => {
   const eventId = req.params.eventId;
 
   // get post data
-  const { title, desc, startDate, endDate } = req.body;
+  const {
+    title,
+    desc,
+    startDate,
+    endDate,
+    canView,
+    canDelete,
+    canUpdate
+  } = req.body;
 
   // construct a file url
   const file = `${req.protocol}://${req.get("host")}/ftp/${req.file.filename}`;
@@ -518,7 +543,7 @@ router.patch("/file/:eventId", upload.single("file"), (req, res) => {
     connection.query(
       {
         sql:
-          "UPDATE `EVENT_MST` SET `MST_TITLE` = ?, `MST_DESC` = ?, `MST_FILE` = ?, `MST_START` = ?, `MST_END` = ?, `MST_ALLDAY` = ? WHERE `EMP_USERNAME` = ? AND `MST_ID` = ? AND `MST_STATUS` = 1",
+          "UPDATE `EVENT_MST` SET `MST_TITLE` = ?, `MST_DESC` = ?, `MST_FILE` = ?, `MST_START` = ?, `MST_END` = ?, `MST_ALLDAY` = ?, `MST_READ` = ?, `MST_DELETE` = ?, `MST_UPDATE` = ? WHERE `EMP_USERNAME` = ? AND `MST_ID` = ? AND `MST_STATUS` = 1",
         values: [
           title,
           desc,
@@ -526,6 +551,9 @@ router.patch("/file/:eventId", upload.single("file"), (req, res) => {
           startDate,
           endDate,
           allDayStatus,
+          canView,
+          canDelete,
+          canUpdate,
           username.toUpperCase(),
           eventId
         ]
@@ -550,6 +578,9 @@ router.patch("/file/:eventId", upload.single("file"), (req, res) => {
                 start: startDate,
                 end: endDate,
                 allDay,
+                canView,
+                canDelete,
+                canUpdate,
                 username: username.toUpperCase()
               }
             });
@@ -565,6 +596,9 @@ router.patch("/file/:eventId", upload.single("file"), (req, res) => {
                 start: startDate,
                 end: endDate,
                 allDay,
+                canView,
+                canDelete,
+                canUpdate,
                 username: username.toUpperCase()
               }
             });
