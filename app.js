@@ -11,7 +11,7 @@ const Auth = require("./routes/Auth");
 const Event = require("./routes/Event");
 
 // add .env configuration
-dotenv.config();
+// dotenv.config();
 
 // create app and set port
 const app = express();
